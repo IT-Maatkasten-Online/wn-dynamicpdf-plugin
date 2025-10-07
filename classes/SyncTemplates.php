@@ -23,7 +23,7 @@ class SyncTemplates
                 return;
             }
 
-            $dbTemplates = Template::lists('is_custom', 'code');
+            $dbTemplates = Template::query()->pluck('is_custom', 'code')->all();
 
             $this->clearNonCustomizedTemplates($dbTemplates, $registeredTemplates);
 
@@ -37,6 +37,13 @@ class SyncTemplates
         }
     }
 
+    protected function checkFontsDir()
+    {
+        if (! file_exists(config('dompdf.options.font_dir'))) {
+            mkdir(config('dompdf.options.font_dir'), 0755, true);
+        }
+    }
+
     protected function createLayouts()
     {
         $registeredLayouts = PDFManager::instance()->listRegisteredLayouts();
@@ -45,7 +52,7 @@ class SyncTemplates
             return;
         }
 
-        $dbLayouts = Layout::lists('code', 'code');
+        $dbLayouts = Layout::query()->pluck('code', 'code')->all();
 
         foreach ($registeredLayouts as $code) {
             if (array_key_exists($code, $dbLayouts)) {
@@ -79,13 +86,6 @@ class SyncTemplates
             $template = new Template;
             $template->fillFromView($code);
             $template->forceSave();
-        }
-    }
-
-    protected function checkFontsDir()
-    {
-        if (! file_exists(config('dompdf.options.font_dir'))) {
-            mkdir(config('dompdf.options.font_dir'), 0755, true);
         }
     }
 
